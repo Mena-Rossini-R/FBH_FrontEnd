@@ -1,1 +1,1 @@
-export const environment = { production: false, apiUrl: 'http://localhost:8081/api' };
+export const environment = { production: false, apiUrl: 'https://fb-backend-q7u1.onrender.com/api' };
