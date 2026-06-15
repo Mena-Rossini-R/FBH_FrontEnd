@@ -1,0 +1,70 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div><h2>Skills Gap & Alerts</h2><p>AI-powered analysis of your performance and learning gaps</p></div>
+    <button class="refresh-btn" (click)="refreshAnalysis()" [disabled]="loadingAnalysis">
+      <mat-icon>auto_awesome</mat-icon> Refresh AI Analysis
+    </button>
+  </div>
+
+  <!-- ── AI SKILLS GAP ANALYSIS ────────────────────────────────────────── -->
+  <div class="ai-analysis-card">
+    <div class="aac-header">
+      <div class="ai-badge"><mat-icon>psychology</mat-icon> AI Skills Analysis</div>
+      <span class="powered-by">Rule-based · No data shared externally</span>
+    </div>
+
+    <div class="aac-loading" *ngIf="loadingAnalysis">
+      <mat-spinner diameter="32" color="accent"></mat-spinner>
+      <span>Analysing your scores and trends...</span>
+    </div>
+
+    <div class="aac-error" *ngIf="!loadingAnalysis && analysisError">
+      <mat-icon>error_outline</mat-icon> {{ analysisError }}
+    </div>
+
+    <div class="aac-content" *ngIf="!loadingAnalysis && skillsGapAnalysis"
+         [innerHTML]="formatAnalysis(skillsGapAnalysis)">
+    </div>
+  </div>
+
+  <!-- ── ALERT SUMMARY ─────────────────────────────────────────────────── -->
+  <div class="alert-summary" *ngIf="!loading">
+    <div class="as-item critical"><mat-icon>error</mat-icon><span>{{ critical }} Critical</span></div>
+    <div class="as-item warning"><mat-icon>warning</mat-icon><span>{{ warnings }} Warnings</span></div>
+    <div class="as-item ok"><mat-icon>check_circle</mat-icon><span>{{ alerts.length - critical - warnings }} OK</span></div>
+  </div>
+
+  <!-- ── ALERTS LIST ───────────────────────────────────────────────────── -->
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <div class="alert-section" *ngIf="!loading">
+    <div class="section-label">ACTIVE ALERTS</div>
+    <div class="alert-list">
+      <div class="alert-card" *ngFor="let a of alerts" [class.resolved]="a.resolved">
+        <div class="ac-stripe" [style.background]="getLevelColor(a.alertLevel)"></div>
+        <div class="ac-body">
+          <div class="ac-top">
+            <span class="ac-level" [style.background]="getLevelColor(a.alertLevel)">{{ a.alertLevel }}</span>
+            <span class="ac-skill">{{ a.skillName }}</span>
+            <span class="ac-score">Score: {{ a.scoreValue }}%</span>
+            <span class="ac-resolved" *ngIf="a.resolved"><mat-icon>check</mat-icon> Resolved</span>
+          </div>
+          <div class="ac-msg">{{ a.message }}</div>
+          <div class="ac-actions" *ngIf="!a.resolved">
+            <button class="ac-btn ack" *ngIf="!a.acknowledged" (click)="acknowledge(a)">
+              <mat-icon>done</mat-icon> Acknowledge
+            </button>
+            <button class="ac-btn res" (click)="resolve(a)">
+              <mat-icon>check_circle</mat-icon> Mark Resolved
+            </button>
+            <span class="ack-note" *ngIf="a.acknowledged">✓ Acknowledged</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="!alerts.length">
+      <mat-icon>check_circle</mat-icon>
+      <p>No active alerts — keep up the good work!</p>
+    </div>
+  </div>
+</div>

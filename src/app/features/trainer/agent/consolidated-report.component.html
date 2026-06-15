@@ -1,0 +1,149 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="ph-title">
+      <mat-icon class="ai-icon">psychology</mat-icon>
+      <div>
+        <h2>AI Consolidated Feedback Report</h2>
+        <p>Automated analysis of all trainees — class health, individual risks, category insights</p>
+      </div>
+    </div>
+    <div class="ph-right">
+      <span class="ai-badge">⭐ Rule-based AI · No API Key · Live Data</span>
+      <button mat-raised-button color="primary" (click)="loadReport()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-card" *ngIf="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+    <div>
+      <div class="loading-title">Analysing all trainee scores...</div>
+      <div class="loading-sub">Checking trends, categories, at-risk students</div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-card" *ngIf="!loading && error">
+    <mat-icon>error_outline</mat-icon> {{ error }}
+  </div>
+
+  <ng-container *ngIf="!loading && report">
+
+    <!-- KPI Row -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><mat-icon>people</mat-icon></div>
+        <div><div class="kpi-val">{{ report.totalTrainees }}</div><div class="kpi-label">Active Trainees</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon purple"><mat-icon>assignment_turned_in</mat-icon></div>
+        <div><div class="kpi-val">{{ report.totalAssessments }}</div><div class="kpi-label">Assessments</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon" [style.background]="getHealthColor(report.classHealthStatus) + '22'">
+          <mat-icon [style.color]="getHealthColor(report.classHealthStatus)">analytics</mat-icon>
+        </div>
+        <div>
+          <div class="kpi-val" [style.color]="getHealthColor(report.classHealthStatus)">
+            {{ report.classAverage }}%
+          </div>
+          <div class="kpi-label">Class Average</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon red"><mat-icon>warning</mat-icon></div>
+        <div>
+          <div class="kpi-val red">{{ report.atRiskTrainees.length }}</div>
+          <div class="kpi-label">At Risk</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><mat-icon>star</mat-icon></div>
+        <div>
+          <div class="kpi-val green">{{ report.topPerformers.length }}</div>
+          <div class="kpi-label">Top Performers</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon amber"><mat-icon>verified</mat-icon></div>
+        <div><div class="kpi-val">{{ report.confidenceScore }}/100</div><div class="kpi-label">Confidence</div></div>
+      </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <div class="summary-card">
+      <div class="sc-header">
+        <mat-icon>summarize</mat-icon>
+        <span>Executive Summary</span>
+        <span class="health-badge" [style.background]="getHealthColor(report.classHealthStatus) + '22'"
+              [style.color]="getHealthColor(report.classHealthStatus)">
+          {{ report.classHealthStatus.replace('_', ' ') }}
+        </span>
+      </div>
+      <p class="sc-text">{{ report.executiveSummary }}</p>
+    </div>
+
+    <!-- Trainer Actions -->
+    <div class="actions-card" *ngIf="report.trainerActions?.length">
+      <div class="ac-header"><mat-icon>bolt</mat-icon> Recommended Actions for You</div>
+      <div class="action-item" *ngFor="let a of report.trainerActions; let i = index">
+        <span class="action-num">{{ i + 1 }}</span><span>{{ a }}</span>
+      </div>
+    </div>
+
+    <div class="two-col">
+
+      <!-- Trainee Summaries -->
+      <div class="section-card">
+        <div class="sec-header"><mat-icon>people</mat-icon> Trainee Breakdown (Urgent First)</div>
+        <div class="trainee-list">
+          <div class="trainee-row" *ngFor="let t of report.traineeSummaries">
+            <div class="tr-av" [style.background]="getStatusColor(t.status)">{{ t.name[0] }}</div>
+            <div class="tr-info">
+              <div class="tr-name">{{ t.name }}</div>
+              <div class="tr-pod">{{ t.podName || '—' }} · {{ t.assessmentCount }} assessments</div>
+              <div class="tr-rec">{{ t.recommendation }}</div>
+            </div>
+            <div class="tr-right">
+              <div class="tr-avg" [style.color]="getScoreColor(t.average)">{{ t.average }}%</div>
+              <span class="status-chip" [style.background]="getStatusBg(t.status)"
+                    [style.color]="getStatusColor(t.status)">{{ t.status }}</span>
+              <mat-icon [style.color]="getTrendColor(t.trend)" class="trend-icon">
+                {{ getTrendIcon(t.trend) }}
+              </mat-icon>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="!report.traineeSummaries?.length">
+            <mat-icon>people_outline</mat-icon><p>No scores uploaded yet</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Insights -->
+      <div class="section-card">
+        <div class="sec-header"><mat-icon>donut_large</mat-icon> Category Insights (Weakest First)</div>
+        <div class="cat-list">
+          <div class="cat-row" *ngFor="let c of report.categoryInsights">
+            <div class="cat-header-row">
+              <span class="cat-icon">{{ c.healthIcon }}</span>
+              <span class="cat-name">{{ c.category }}</span>
+              <span class="cat-avg" [style.color]="getScoreColor(c.classAverage)">{{ c.classAverage }}%</span>
+            </div>
+            <div class="cat-bar-track">
+              <div class="cat-bar-fill"
+                   [style.width.%]="c.classAverage"
+                   [style.background]="getScoreColor(c.classAverage)"></div>
+            </div>
+            <div class="cat-detail">
+              {{ c.studentsBelowThreshold }} student(s) below 65% · {{ c.suggestion }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+</div>

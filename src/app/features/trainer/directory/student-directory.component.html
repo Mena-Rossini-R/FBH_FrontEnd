@@ -1,0 +1,131 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div><h2>Student Directory</h2><p>All student scores · View AI feedback per assignment</p></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input [(ngModel)]="searchTerm" placeholder="Search by name or email..." (ngModelChange)="applyFilter()">
+    </div>
+    <select class="filter-select" [(ngModel)]="podFilter" (change)="applyFilter()">
+      <option value="">All Pods</option>
+      <option *ngFor="let p of pods" [value]="p">{{ p }}</option>
+    </select>
+    <button mat-stroked-button (click)="load()"><mat-icon>refresh</mat-icon></button>
+  </div>
+
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <div class="dir-layout" *ngIf="!loading">
+    <!-- Table -->
+    <div class="table-panel" [class.narrow]="selectedScore">
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="full-table">
+
+          <ng-container matColumnDef="traineeName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Student</th>
+            <td mat-cell *matCellDef="let r">
+              <div class="name-cell">
+                <div class="av-circle" [style.background]="getScoreColor(r.score)">{{ r.traineeName[0] }}</div>
+                <div>
+                  <div class="td-name">{{ r.traineeName }}</div>
+                  <div class="td-pod" *ngIf="!selectedScore">{{ r.podName }}</div>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="traineeEmail">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+            <td mat-cell *matCellDef="let r" class="td-meta">{{ r.traineeEmail }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="podName">
+            <th mat-header-cell *matHeaderCellDef>Pod</th>
+            <td mat-cell *matCellDef="let r">
+              <span class="pod-chip">{{ r.podName || '—' }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="assignmentName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Assignment</th>
+            <td mat-cell *matCellDef="let r"><strong>{{ r.assignmentName }}</strong></td>
+          </ng-container>
+
+          <ng-container matColumnDef="score">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Score</th>
+            <td mat-cell *matCellDef="let r">
+              <span [ngClass]="getScoreClass(r.score)" class="score-val">{{ r.score }}%</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="grade">
+            <th mat-header-cell *matHeaderCellDef>Grade</th>
+            <td mat-cell *matCellDef="let r" class="td-meta">{{ r.grade || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="trend">
+            <th mat-header-cell *matHeaderCellDef>Trend</th>
+            <td mat-cell *matCellDef="let r">
+              <mat-icon [ngClass]="getTrendClass(r.trend)">{{ getTrendIcon(r.trend) }}</mat-icon>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="feedbackStatus">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let r">
+              <span class="status-chip"
+                    [class.pending]="r.feedbackStatus==='PENDING'"
+                    [class.viewed]="r.feedbackStatus==='VIEWED'">
+                {{ r.feedbackStatus }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>AI Feedback</th>
+            <td mat-cell *matCellDef="let r">
+              <button class="ai-btn" (click)="viewAiFeedback(r)"
+                      [class.active]="selectedScore?.id === r.id">
+                <mat-icon>auto_awesome</mat-icon>
+                <span *ngIf="!selectedScore">AI</span>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"
+              class="table-row" [class.selected-row]="selectedScore?.id === row.id"></tr>
+        </table>
+      </div>
+      <mat-paginator [pageSizeOptions]="[10,25,50]" showFirstLastButtons></mat-paginator>
+    </div>
+
+    <!-- AI Feedback Panel -->
+    <div class="ai-panel" *ngIf="selectedScore">
+      <div class="aip-header">
+        <div class="aip-title-row">
+          <mat-icon style="color:#F59E0B">auto_awesome</mat-icon>
+          <span>AI Feedback</span>
+          <button class="aip-close" (click)="closeFeedback()"><mat-icon>close</mat-icon></button>
+        </div>
+        <div class="aip-meta">
+          <strong>{{ selectedScore.traineeName }}</strong> ·
+          {{ selectedScore.assignmentName }} ·
+          <span [ngClass]="getScoreClass(selectedScore.score)">{{ selectedScore.score }}%</span>
+        </div>
+      </div>
+      <div class="aip-body">
+        <div class="aip-loading" *ngIf="loadingFeedback">
+          <mat-spinner diameter="28"></mat-spinner>
+          <span>Generating AI feedback...</span>
+        </div>
+        <div class="aip-content" *ngIf="!loadingFeedback && aiFeedbackText"
+             [innerHTML]="formatFeedback(aiFeedbackText)">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

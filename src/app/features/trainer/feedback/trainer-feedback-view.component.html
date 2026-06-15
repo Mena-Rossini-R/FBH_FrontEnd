@@ -1,0 +1,54 @@
+<div class="feedback-container">
+  <div class="feedback-sidebar">
+    <h2>Student Feedback</h2>
+    <mat-list>
+      <mat-list-item *ngFor="let score of scores" 
+                     (click)="selectScore(score)"
+                     [class.selected]="selectedScore?.id === score.id">
+        <mat-icon matListItemIcon>person</mat-icon>
+        <div matListItemTitle>{{ score.traineeName }}</div>
+        <div matListItemLine>{{ score.assignmentName }}</div>
+      </mat-list-item>
+    </mat-list>
+    <p *ngIf="!loading && scores.length === 0" class="empty-state">
+      No feedback from students yet
+    </p>
+  </div>
+
+  <div class="feedback-main">
+    <div *ngIf="!selectedScore" class="empty-state">
+      <mat-icon>chat_bubble_outline</mat-icon>
+      <p>Select a student to view their feedback</p>
+    </div>
+
+    <div *ngIf="selectedScore" class="conversation">
+      <div class="conversation-header">
+        <h3>{{ selectedScore.traineeName }}</h3>
+        <p>{{ selectedScore.assignmentName }} - Score: {{ selectedScore.score }}</p>
+      </div>
+
+      <div class="messages">
+        <div *ngFor="let msg of messages" 
+             [class.trainer-message]="isTrainer(msg.senderRole)"
+             [class.trainee-message]="!isTrainer(msg.senderRole)"
+             class="message">
+          <div class="message-content">{{ msg.message }}</div>
+          <div class="message-time">{{ msg.createdAt | date:'short' }}</div>
+        </div>
+      </div>
+
+      <div class="reply-box">
+        <mat-form-field appearance="outline">
+          <mat-label>Type your reply...</mat-label>
+          <textarea matInput [formControl]="messageCtrl" rows="3"></textarea>
+        </mat-form-field>
+        <button mat-raised-button color="primary" 
+                (click)="sendReply()"
+                [disabled]="sending || messageCtrl.invalid">
+          <mat-icon>send</mat-icon>
+          Send Reply
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

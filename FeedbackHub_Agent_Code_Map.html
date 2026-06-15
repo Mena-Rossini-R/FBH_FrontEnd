@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeedbackHub v4 - Agent Code Map</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #2A70B2; border-bottom: 3px solid #2A70B2; padding-bottom: 10px; }
+        h2 { color: #1A8240; margin-top: 30px; border-left: 4px solid #1A8240; padding-left: 15px; }
+        h3 { color: #BE780E; margin-top: 20px; }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .code-block {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+        .endpoint {
+            background: #e3f2fd;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+        .component {
+            background: #f3e5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #9C27B0;
+            border-radius: 4px;
+        }
+        .ai-feature {
+            background: #fff3e0;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #FF9800;
+            border-radius: 4px;
+        }
+        .flow-diagram {
+            background: #e8f5e9;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #4CAF50;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th {
+            background: #2A70B2;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .tag-backend { background: #ffcdd2; color: #c62828; }
+        .tag-frontend { background: #c8e6c9; color: #2e7d32; }
+        .tag-ai { background: #ffe0b2; color: #e65100; }
+        .tag-new { background: #b3e5fc; color: #01579b; }
+    </style>
+</head>
+<body>
+
+<h1>🎓 FeedbackHub v4 - Agent Code Map & Architecture</h1>
+
+<div class="section">
+    <h2>📋 Project Overview</h2>
+    <p><strong>FeedbackHub v4</strong> is a comprehensive trainee feedback and performance tracking system with AI-powered insights.</p>
+    <p><strong>Tech Stack:</strong></p>
+    <ul>
+        <li><strong>Backend:</strong> Java Spring Boot, Spring Security, JPA/Hibernate, MySQL</li>
+        <li><strong>Frontend:</strong> Angular 15+, TypeScript, Angular Material, RxJS</li>
+        <li><strong>AI Integration:</strong> OpenAI API (for feedback & skills gap analysis)</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>🏗️ Architecture Overview</h2>
+    <div class="flow-diagram">
+        <pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (Angular)                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │   Trainer    │  │   Trainee    │  │  Auth/Login  │          │
+│  │  Dashboard   │  │  Dashboard   │  │              │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ Pod Manager  │  │  Scorecards  │  │   Upload     │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│                    ↓ HTTP/REST API ↓                            │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    BACKEND (Spring Boot)                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ Controllers  │→ │  Services    │→ │ Repositories │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│                          ↓                    ↓                  │
+│                  ┌──────────────┐    ┌──────────────┐          │
+│                  │  AI Service  │    │   Database   │          │
+│                  └──────────────┘    │   (MySQL)    │          │
+│                          ↓            └──────────────┘          │
+└─────────────────────────────────────────────────────────────────┘
+                          ↓
+                  ┌──────────────┐
+                  │  OpenAI API  │
+                  └──────────────┘
+        </pre>
+    </div>
+</div>
+
+<div class="section">
+    <h2>🔐 Authentication & Security</h2>
+    
+    <h3>Login Flow</h3>
+    <div class="flow-diagram">
+        <pre>
+User Login → AuthController.login()
+    ↓
+UserDetailsService.loadUserByUsername()
+    ↓
+Generate JWT Token
+    ↓
+Return { token, userId, role, fullName, email }
+    ↓
+Frontend stores token in localStorage
+    ↓
+All subsequent requests include: Authorization: Bearer {token}
+        </pre>
+    </div>
+
+    <div class="endpoint">
+        <strong>POST</strong> <code>/api/auth/login</code><br>
+        <strong>Body:</strong> <code>{ username, password }</code><br>
+        <strong>Returns:</strong> <code>AuthResponse</code> with JWT token
+    </div>
+
+    <div class="component">
+        <strong>Frontend:</strong> <code>LoginComponent</code> → <code>AuthService</code> → <code>JwtInterceptor</code>
+    </div>
+</div>
+
+<div class="section">
+    <h2>👨‍🏫 Trainer Features</h2>
+
+    <h3>1. Trainer Dashboard</h3>
+    <p>Overview of all trainees, class performance, at-risk students, and pod analytics.</p>
+    
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/trainer/dashboard</code><br>
+        <strong>Returns:</strong> <code>DashboardDto</code> with:
+        <ul>
+            <li>totalStudents, avgScore, belowThreshold, activePods</li>
+            <li>podAverages (Map&lt;String, Double&gt;)</li>
+            <li>atRiskStudents (List&lt;UserDto.Response&gt;)</li>
+            <li>recentActivity (List&lt;ActivityLogDto&gt;)</li>
+        </ul>
+    </div>
+
+    <div class="component">
+        <strong>Frontend:</strong> <code>TrainerDashboardComponent</code><br>
+        <strong>Backend:</strong> <code>DashboardController.trainerDashboard()</code> → <code>DashboardService.getTrainerDashboard()</code>
+    </div>
+
+    <h3>2. Pod Manager</h3>
+    <p>View pods, students in each pod, and individual student progress with AI insights.</p>
+    
+    <div class="component">
+        <strong>Component:</strong> <code>PodManagerComponent</code><br>
+        <strong>Features:</strong>
+        <ul>
+            <li>Pod list view with performance metrics</li>
+            <li>Student list per pod with category averages</li>
+            <li>Individual student detail view with AI feedback & skills gap</li>
+        </ul>
+    </div>
+
+    <h3>3. Bulk Upload (Scores & Cohorts)</h3>
+    <p>Upload Excel files to import scores or create cohorts/pods.</p>
+
+    <div class="endpoint">
+        <strong>POST</strong> <code>/api/scores/bulk-upload</code><br>
+        <strong>Body:</strong> MultipartFile (Excel)<br>
+        <strong>Returns:</strong> <code>BulkUploadResult</code> with success/error counts
+    </div>
+
+    <div class="endpoint">
+        <strong>POST</strong> <code>/api/cohort/upload</code> <span class="tag tag-new">NEW</span><br>
+        <strong>Body:</strong> MultipartFile (Excel with student details)<br>
+        <strong>Returns:</strong> Cohort creation result
+    </div>
+
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/template/score-upload</code> <span class="tag tag-new">NEW</span><br>
+        <strong>Returns:</strong> Excel template file for download
+    </div>
+
+    <div class="component">
+        <strong>Frontend:</strong> <code>BulkUploadComponent</code>, <code>DownloadTemplateComponent</code>, <code>CohortUploadComponent</code><br>
+        <strong>Backend:</strong> <code>ScoreController</code>, <code>CohortUploadController</code>, <code>TemplateController</code>
+    </div>
+
+    <h3>4. Student Directory</h3>
+    <p>View all trainees with search, filter, and sorting capabilities.</p>
+
+    <div class="component">
+        <strong>Component:</strong> <code>StudentDirectoryComponent</code><br>
+        <strong>Features:</strong> Search by name/email, filter by pod/cohort, sort by score/name
+    </div>
+
+    <h3>5. Activity Log</h3>
+    <p>Track all system activities (uploads, feedback, score submissions).</p>
+
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/activity/recent?limit=50</code><br>
+        <strong>Returns:</strong> List of recent activity logs
+    </div>
+
+    <div class="component">
+        <strong>Component:</strong> <code>ActivityLogComponent</code><br>
+        <strong>Backend:</strong> <code>ActivityLogService.getRecentActivity()</code>
+    </div>
+</div>
+
+<div class="section">
+    <h2>👨‍🎓 Trainee Features</h2>
+
+    <h3>1. Trainee Dashboard</h3>
+    <p>Personal progress overview with AI feedback and skills gap analysis.</p>
+
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/trainee/dashboard</code><br>
+        <strong>Returns:</strong> <code>DashboardDto</code> with:
+        <ul>
+            <li>overallProgress, assignmentsDone, totalAssignments, pendingFeedback</li>
+            <li>weeklyTrend (Map&lt;String, Double&gt;)</li>
+            <li>aiFeedback (AI-generated feedback) <span class="tag tag-ai">AI</span></li>
+            <li>skillsGap (AI-analyzed weak areas) <span class="tag tag-ai">AI</span></li>
+        </ul>
+    </div>
+
+    <div class="component">
+        <strong>Component:</strong> <code>TraineeDashboardComponent</code><br>
+        <strong>Backend:</strong> <code>DashboardController.traineeDashboard()</code> → <code>DashboardService.getTraineeDashboard()</code>
+    </div>
+
+    <h3>2. Scorecards</h3>
+    <p>View all submitted scores with filters and AI feedback.</p>
+
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/scores/trainee/{id}</code><br>
+        <strong>Returns:</strong> List of <code>ScoreResponse</code>
+    </div>
+
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/ai/feedback/{scoreId}</code> <span class="tag tag-ai">AI</span> <span class="tag tag-new">NEW</span><br>
+        <strong>Returns:</strong> AI-generated feedback for specific score
+    </div>
+
+    <div class="component">
+        <strong>Component:</strong> <code>ScorecardsComponent</code><br>
+        <strong>Integrates:</strong> <code>AiFeedbackComponent</code>
+    </div>
+
+    <h3>3. Feedback Thread</h3>
+    <p>Two-way communication between trainer and trainee for each score.</p>
+
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/feedback/{scoreId}</code><br>
+        <strong>POST</strong> <code>/api/feedback</code> - Body: <code>{ scoreId, message }</code><br>
+        <strong>POST</strong> <code>/api/feedback/{scoreId}/viewed</code>
+    </div>
+
+    <div class="component">
+        <strong>Component:</strong> <code>FeedbackThreadComponent</code><br>
+        <strong>Backend:</strong> <code>FeedbackController</code> → <code>FeedbackService</code>
+    </div>
+
+    <h3>4. Trainer Feedback (from Trainee)</h3>
+    <p>Trainees provide feedback about the trainer's sessions.</p>
+
+    <div class="endpoint">
+        <strong>POST</strong> <code>/api/feedback/trainer</code> <span class="tag tag-new">NEW</span><br>
+        <strong>Body:</strong> Feedback form data<br>
+        <strong>Returns:</strong> Success confirmation
+    </div>
+
+    <div class="component">
+        <strong>Component:</strong> <code>TrainerFeedbackComponent</code><br>
+        <strong>Note:</strong> Questions from Tecstac portal to be added
+    </div>
+
+    <h3>5. Skill Alerts</h3>
+    <p>Notifications for at-risk categories and improvement recommendations.</p>
+
+    <div class="endpoint">
+        <strong>GET</strong> <code>/api/alerts/{userId}</code><br>
+        <strong>POST</strong> <code>/api/alerts/{id}/acknowledge</code><br>
+        <strong>POST</strong> <code>/api/alerts/{id}/resolve</code>
+    </div>
+
+    <div class="component">
+        <strong>Component:</strong> <code>SkillAlertsComponent</code><br>
+        <strong>Backend:</strong> <code>AlertController</code> → <code>AlertService</code>
+    </div>
+
+    <h3>6. Cohort Info</h3>
+    <p>View cohort/pod details, fellow students, and performance comparison.</p>
+
+    <div class="component">
+        <strong>Component:</strong> <code>CohortInfoComponent</code>
+    </div>
+</div>
+
+<div class="section">
+    <h2>🤖 AI Agent Integration</h2>
+
+    <h3>AI Features Overview</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Endpoint</th>
+                <th>Purpose</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>AI Feedback</strong></td>
+                <td><code>GET /api/ai/feedback/{scoreId}</code></td>
+                <td>Generate personalized feedback for individual scores</td>
+                <td><span class="tag tag-new">Stubbed</span></td>
+            </tr>
+            <tr>
+                <td><strong>Skills Gap Analysis</strong></td>
+                <td><code>GET /api/ai/skills-gap/{traineeId}</code></td>
+                <td>Identify weak areas and suggest improvement paths</td>
+                <td><span class="tag tag-new">Stubbed</span></td>
+            </tr>
+            <tr>
+                <td><strong>Consolidated Report (Agent)</strong></td>
+                <td><code>GET /api/trainer/agent/consolidated-report</code></td>
+                <td>AI-powered class-wide insights for trainers</td>
+                <td><span class="tag">Existing</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>AI Integration Points</h3>
+
+    <div class="ai-feature">
+        <h4>1. Score-Level AI Feedback</h4>
+        <p><strong>Use Case:</strong> When a trainee views their score, AI provides personalized feedback on strengths and areas to improve.</p>
+        <div class="code-block">
+            <strong>Backend:</strong>
+            <code>AiFeedbackController.getAiFeedback(scoreId)</code><br>
+            → Fetch score details from DB<br>
+            → Call OpenAI API with prompt: "Analyze this score and provide constructive feedback..."<br>
+            → Return AI-generated text
+        </div>
+        <div class="code-block">
+            <strong>Frontend:</strong>
+            <code>&lt;app-ai-feedback [feedback]="aiFeedback"&gt;&lt;/app-ai-feedback&gt;</code><br>
+            Displays AI feedback with a robot icon
+        </div>
+    </div>
+
+    <div class="ai-feature">
+        <h4>2. Skills Gap Analysis</h4>
+        <p><strong>Use Case:</strong> Trainee or trainer views a student's overall profile; AI identifies weak categories and suggests action plans.</p>
+        <div class="code-block">
+            <strong>Backend:</strong>
+            <code>AiFeedbackController.getSkillsGap(traineeId)</code><br>
+            → Fetch all scores for trainee<br>
+            → Group by category, calculate averages<br>
+            → Call OpenAI API: "Identify weak areas based on these scores..."<br>
+            → Return structured analysis
+        </div>
+        <div class="code-block">
+            <strong>Frontend:</strong>
+            <code>&lt;app-skills-gap [analysis]="skillsGapAnalysis"&gt;&lt;/app-skills-gap&gt;</code><br>
+            Displays weak categories with improvement tips
+        </div>
+    </div>
+
+    <div class="ai-feature">
+        <h4>3. Consolidated Report (Trainer Agent)</h4>
+        <p><strong>Use Case:</strong> Trainer generates a class-wide AI report with insights, trends, and recommendations.</p>
+        <div class="code-block">
+            <strong>Endpoint:</strong> <code>GET /api/trainer/agent/consolidated-report</code><br>
+            <strong>Returns:</strong>
+            <ul>
+                <li>Class summary</li>
+                <li>Per-student summaries with status (STRONG, AT_RISK, etc.)</li>
+                <li>Category insights (which categories need attention)</li>
+                <li>Recommendations for trainers</li>
+            </ul>
+        </div>
+        <div class="component">
+            <strong>Component:</strong> <code>ConsolidatedReportComponent</code>
+        </div>
+    </div>
+
+    <h3>AI Implementation Guide</h3>
+    <div class="code-block">
+        <strong>1. Backend Integration (Example):</strong>
+        <pre>
+// AiFeedbackController.java
+@GetMapping("/feedback/{scoreId}")
+public ResponseEntity&lt;String&gt; getAiFeedback(@PathVariable Long scoreId) {
+    Score score = scoreRepository.findById(scoreId).orElseThrow(...);
+    String prompt = buildPrompt(score); // Include score, category, assignment
+    String aiFeedback = openAiService.generateFeedback(prompt);
+    return ResponseEntity.ok(aiFeedback);
+}
+
+// OpenAiService.java
+public String generateFeedback(String prompt) {
+    // Call OpenAI API
+    ChatCompletionRequest request = ChatCompletionRequest.builder()
+        .model("gpt-4")
+        .messages(List.of(new Message("user", prompt)))
+        .build();
+    return openAiClient.createChatCompletion(request).getChoices().get(0).getMessage().getContent();
+}
+        </pre>
+    </div>
+
+    <div class="code-block">
+        <strong>2. Frontend Integration (Example):</strong>
+        <pre>
+// trainee-dashboard.component.ts
+ngOnInit(): void {
+    this.dashSvc.getTraineeDashboard(userId).subscribe(stats => {
+        this.stats = stats;
+    });
+    
+    // Fetch AI feedback separately
+    this.aiService.getAiFeedback(scoreId).subscribe(feedback => {
+        this.aiFeedback = feedback;
+    });
+    
+    this.aiService.getSkillsGap(userId).subscribe(analysis => {
+        this.skillsGap = analysis;
+    });
+}
+        </pre>
+    </div>
+</div>
+
+<div class="section">
+    <h2>🗂️ Key Backend Components</h2>
+
+    <h3>Controllers</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Controller</th>
+                <th>Base Path</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>AuthController</code></td>
+                <td><code>/api/auth</code></td>
+                <td>Login, registration</td>
+            </tr>
+            <tr>
+                <td><code>DashboardController</code></td>
+                <td><code>/api/trainer</code>, <code>/api/trainee</code></td>
+                <td>Dashboard data for both roles</td>
+            </tr>
+            <tr>
+                <td><code>ScoreController</code></td>
+                <td><code>/api/scores</code></td>
+                <td>CRUD for scores, bulk upload</td>
+            </tr>
+            <tr>
+                <td><code>FeedbackController</code></td>
+                <td><code>/api/feedback</code></td>
+                <td>Feedback thread messages</td>
+            </tr>
+            <tr>
+                <td><code>AlertController</code></td>
+                <td><code>/api/alerts</code></td>
+                <td>Skill alerts management</td>
+            </tr>
+            <tr>
+                <td><code>AiFeedbackController</code></td>
+                <td><code>/api/ai</code></td>
+                <td>AI feedback & skills gap <span class="tag tag-new">NEW</span></td>
+            </tr>
+            <tr>
+                <td><code>TemplateController</code></td>
+                <td><code>/api/template</code></td>
+                <td>Download Excel templates <span class="tag tag-new">NEW</span></td>
+            </tr>
+            <tr>
+                <td><code>CohortUploadController</code></td>
+                <td><code>/api/cohort</code></td>
+                <td>Upload cohort/pod Excel <span class="tag tag-new">NEW</span></td>
+            </tr>
+            <tr>
+                <td><code>TrainerFeedbackController</code></td>
+                <td><code>/api/feedback/trainer</code></td>
+                <td>Trainee feedback for trainers <span class="tag tag-new">NEW</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Services</h3>
+    <ul>
+        <li><code>DashboardService</code> - Aggregates data for dashboards</li>
+        <li><code>ScoreService</code> - Manages scores, uploads</li>
+        <li><code>FeedbackService</code> - Handles feedback threads</li>
+        <li><code>AlertService</code> - Creates and manages alerts</li>
+        <li><code>ActivityLogService</code> - Logs all system activities</li>
+        <li><code>UserService</code> - User management</li>
+        <li><code>OpenAiService</code> - <span class="tag tag-ai">AI</span> Integration with OpenAI API (to be implemented)</li>
+    </ul>
+
+    <h3>Entities</h3>
+    <ul>
+        <li><code>User</code> - Trainee/Trainer profiles</li>
+        <li><code>Score</code> - Individual score records</li>
+        <li><code>Feedback</code> - Feedback messages</li>
+        <li><code>Alert</code> - Skill alerts</li>
+        <li><code>ActivityLog</code> - System activity records</li>
+    </ul>
+
+    <h3>DTOs</h3>
+    <ul>
+        <li><code>DashboardDto</code> - Dashboard response</li>
+        <li><code>ScoreDto</code> - Score data transfer</li>
+        <li><code>UserDto</code> - User data transfer</li>
+        <li><code>BulkUploadResult</code> - Upload results</li>
+        <li><code>CohortUploadResult</code> - Cohort upload results <span class="tag tag-new">NEW</span></li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>🎨 Key Frontend Components</h2>
+
+    <h3>Shared Components</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Component</th>
+                <th>Selector</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>LoadingSpinnerComponent</code></td>
+                <td><code>app-loading-spinner</code></td>
+                <td>Shows loading indicator</td>
+            </tr>
+            <tr>
+                <td><code>ScoreBadgeComponent</code></td>
+                <td><code>app-score-badge</code></td>
+                <td>Displays score with color coding</td>
+            </tr>
+            <tr>
+                <td><code>AiFeedbackComponent</code></td>
+                <td><code>app-ai-feedback</code></td>
+                <td>Displays AI-generated feedback <span class="tag tag-ai">AI</span> <span class="tag tag-new">NEW</span></td>
+            </tr>
+            <tr>
+                <td><code>SkillsGapComponent</code></td>
+                <td><code>app-skills-gap</code></td>
+                <td>Shows AI skills gap analysis <span class="tag tag-ai">AI</span> <span class="tag tag-new">NEW</span></td>
+            </tr>
+            <tr>
+                <td><code>StudentProgressComponent</code></td>
+                <td><code>app-student-progress</code></td>
+                <td>Individual student progress details <span class="tag tag-new">NEW</span></td>
+            </tr>
+            <tr>
+                <td><code>DownloadTemplateComponent</code></td>
+                <td><code>app-download-template</code></td>
+                <td>Button to download Excel template <span class="tag tag-new">NEW</span></td>
+            </tr>
+            <tr>
+                <td><code>CohortUploadComponent</code></td>
+                <td><code>app-cohort-upload</code></td>
+                <td>Upload cohort/pod Excel <span class="tag tag-new">NEW</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Services</h3>
+    <ul>
+        <li><code>AuthService</code> - Authentication & token management</li>
+        <li><code>ScoreService</code> - Score CRUD operations</li>
+        <li><code>DashboardService</code> - Dashboard data</li>
+        <li><code>FeedbackService</code> - Feedback operations</li>
+        <li><code>AlertService</code> - Alert operations</li>
+        <li><code>AiService</code> - <span class="tag tag-ai">AI</span> AI feedback & skills gap <span class="tag tag-new">NEW</span></li>
+        <li><code>TemplateService</code> - Template download <span class="tag tag-new">NEW</span></li>
+        <li><code>CohortUploadService</code> - Cohort upload <span class="tag tag-new">NEW</span></li>
+        <li><code>TrainerFeedbackService</code> - Trainer feedback submission <span class="tag tag-new">NEW</span></li>
+    </ul>
+
+    <h3>Guards & Interceptors</h3>
+    <ul>
+        <li><code>AuthGuard</code> - Route protection, role-based access</li>
+        <li><code>JwtInterceptor</code> - Adds JWT token to all HTTP requests</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>📊 Data Flow Examples</h2>
+
+    <h3>Example 1: Trainer Views Dashboard</h3>
+    <div class="flow-diagram">
+        <pre>
+1. User logs in as Trainer
+2. Frontend navigates to /trainer/dashboard
+3. TrainerDashboardComponent.ngOnInit() calls:
+   → DashboardService.getTrainerDashboard()
+4. HTTP GET /api/trainer/dashboard (with JWT token)
+5. Backend: JwtAuthenticationFilter validates token
+6. DashboardController.trainerDashboard() invoked
+7. DashboardService.getTrainerDashboard(email) called
+8. Service queries:
+   → UserRepository.findByRole(TRAINEE) - get all trainees
+   → ScoreRepository.findAvgScoreByTrainee() - for each trainee
+   → ScoreRepository.findAvgScoreByPod() - for each pod
+   → ActivityLogService.getRecentActivity(10)
+9. Build DashboardDto with all aggregated data
+10. Return to frontend
+11. TrainerDashboardComponent displays:
+    → KPI cards (total students, avg score, at-risk count, active pods)
+    → Pod performance bar chart
+    → At-risk students list with AI feedback
+    → Recent activity log
+        </pre>
+    </div>
+
+    <h3>Example 2: Trainee Views AI Feedback on Score</h3>
+    <div class="flow-diagram">
+        <pre>
+1. Trainee navigates to Scorecards page
+2. ScorecardsComponent loads all scores
+3. For each score, component requests AI feedback:
+   → AiService.getAiFeedback(scoreId)
+4. HTTP GET /api/ai/feedback/{scoreId}
+5. Backend: AiFeedbackController.getAiFeedback(scoreId)
+6. Service:
+   → Fetch Score entity from DB
+   → Build prompt: "Provide feedback for this score: ..."
+   → Call OpenAI API
+   → Return AI-generated feedback text
+7. Frontend receives feedback
+8. AiFeedbackComponent displays feedback with robot icon
+        </pre>
+    </div>
+
+    <h3>Example 3: Bulk Score Upload</h3>
+    <div class="flow-diagram">
+        <pre>
+1. Trainer uploads Excel file via BulkUploadComponent
+2. User can download template first using DownloadTemplateComponent
+3. File selected → ScoreService.bulkUpload(file)
+4. HTTP POST /api/scores/bulk-upload (multipart/form-data)
+5. Backend: ScoreController.bulkUpload(file)
+6. Service:
+   → Parse Excel using Apache POI
+   → Validate each row (email, score range, etc.)
+   → For each valid row:
+      • Find User by email
+      • Create Score entity
+      • Save to DB
+      • Log activity
+   → Collect errors for invalid rows
+7. Return BulkUploadResult { successCount, errorCount, errors[], uploaded[] }
+8. Frontend displays results table with success/error counts
+        </pre>
+    </div>
+</div>
+
+<div class="section">
+    <h2>🔧 Configuration & Setup</h2>
+
+    <h3>Backend Configuration</h3>
+    <div class="code-block">
+        <strong>application.properties:</strong>
+        <pre>
+# Database
+spring.datasource.url=jdbc:mysql://localhost:3306/feedbackhub
+spring.datasource.username=root
+spring.datasource.password=yourpassword
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+# Security
+jwt.secret=your-secret-key
+jwt.expiration=86400000
+
+# AI (if using OpenAI)
+openai.api.key=sk-...
+openai.model=gpt-4
+        </pre>
+    </div>
+
+    <h3>Frontend Configuration</h3>
+    <div class="code-block">
+        <strong>environment.ts:</strong>
+        <pre>
+export const environment = {
+    production: false,
+    apiUrl: 'http://localhost:8080/api'
+};
+        </pre>
+    </div>
+
+    <h3>Running the Application</h3>
+    <div class="code-block">
+        <strong>Backend:</strong>
+        <pre>
+cd backend_fb_V3
+mvn spring-boot:run
+        </pre>
+        <strong>Frontend:</strong>
+        <pre>
+cd frontend
+npm install
+ng serve
+        </pre>
+        Access at: <code>http://localhost:4200</code>
+    </div>
+</div>
+
+<div class="section">
+    <h2>📝 TODO / Pending Features</h2>
+    <ul>
+        <li>✅ <strong>Completed:</strong> Basic authentication, dashboards, score management, feedback threads</li>
+        <li>✅ <strong>Completed:</strong> Pod manager, bulk upload, activity log</li>
+        <li>⚠️ <strong>In Progress:</strong>
+            <ul>
+                <li>AI feedback integration (stubs created, OpenAI API integration pending)</li>
+                <li>Skills gap analysis (stubs created, logic pending)</li>
+                <li>Cohort/pod upload from Excel (stub created, parsing logic pending)</li>
+                <li>Trainer feedback form (waiting for Tecstac portal questions)</li>
+            </ul>
+        </li>
+        <li>🔜 <strong>Planned:</strong>
+            <ul>
+                <li>Real-time notifications (WebSocket)</li>
+                <li>Email notifications for alerts</li>
+                <li>Export reports to PDF</li>
+                <li>Advanced filtering and search</li>
+                <li>Mobile-responsive improvements</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>🚀 Deployment Notes</h2>
+    <ul>
+        <li><strong>Database:</strong> Ensure MySQL is running and schema is created</li>
+        <li><strong>Security:</strong> Change JWT secret and OpenAI API key in production</li>
+        <li><strong>CORS:</strong> Configure allowed origins for frontend in SecurityConfig</li>
+        <li><strong>File Uploads:</strong> Ensure temp directory exists and has write permissions</li>
+        <li><strong>AI Integration:</strong> Set up OpenAI API key and handle rate limits</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>📞 Support & Contact</h2>
+    <p>For questions or issues, refer to the project README or contact the development team.</p>
+    <p><strong>Project Repository:</strong> [Add your Git repo URL here]</p>
+</div>
+
+<footer style="text-align: center; margin-top: 40px; padding: 20px; border-top: 2px solid #ddd;">
+    <p><strong>FeedbackHub v4</strong> - Agent Code Map Generated on May 24, 2026</p>
+</footer>
+
+</body>
+</html>

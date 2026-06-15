@@ -1,0 +1,175 @@
+<div class="page-wrapper">
+
+  <div class="page-header">
+    <div class="breadcrumb">
+      <span class="bc-link" (click)="back()" *ngIf="selectedPod">
+        <mat-icon>arrow_back</mat-icon> {{ selectedStudent ? selectedPod : 'All Pods' }}
+      </span>
+      <mat-icon *ngIf="selectedPod" style="color:#CBD5E1;font-size:16px;width:16px">chevron_right</mat-icon>
+      <span class="bc-current">
+        {{ selectedStudent ? selectedStudent.name : selectedPod ? selectedPod : 'Pod Manager' }}
+      </span>
+    </div>
+    <p>{{ selectedStudent ? 'Individual student progress & AI analysis' :
+         selectedPod ? 'Students in ' + selectedPod : 'Manage pods and view student performance' }}</p>
+  </div>
+
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <!-- Pod List -->
+  <div class="pod-grid" *ngIf="!loading && !selectedPod">
+    <div class="pod-card" *ngFor="let pod of pods" (click)="selectPod(pod)">
+      <div class="pod-stripe" [style.background]="pod.color"></div>
+      <div class="pod-body">
+        <div class="pod-header-row">
+          <span class="pod-name">{{ pod.name }}</span>
+          <span class="pod-badge" [style.background]="pod.color">{{ pod.status }}</span>
+        </div>
+        <div class="pod-avg" [style.color]="pod.color">{{ pod.avg }}%</div>
+        <div class="pod-sub">{{ pod.count }} students · Avg Score</div>
+        <mat-progress-bar mode="determinate" [value]="pod.avg"
+          [color]="pod.avg >= 75 ? 'primary' : 'warn'" style="margin:10px 0 4px"></mat-progress-bar>
+        <div class="pod-student-chips">
+          <span class="sc-chip" *ngFor="let s of pod.students | slice:0:4">{{ firstName(getStudentName(s)) }}</span>
+          <span class="sc-more" *ngIf="pod.students.length > 4">+{{ pod.students.length - 4 }}</span>
+        </div>
+        <div class="pod-click-hint"><mat-icon>arrow_forward</mat-icon> Click to view students</div>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="!pods.length">
+      <mat-icon>group_off</mat-icon>
+      <p>No pods found. Upload scores or create a cohort to see pods here.</p>
+    </div>
+  </div>
+
+  <!-- Students in Pod -->
+  <div *ngIf="!loading && selectedPod && !selectedStudent">
+    <div class="student-list">
+      <div class="student-row" *ngFor="let s of currentPod?.students" (click)="selectStudent(s)">
+        <div class="sr-av" [style.background]="getScoreColor(s.avg)">{{ s.name[0] }}</div>
+        <div class="sr-info">
+          <div class="sr-name">{{ s.name }}</div>
+          <div class="sr-email">{{ s.email }}</div>
+        </div>
+        <div class="sr-cats">
+          <span class="cat-chip"
+                *ngFor="let cat of catEntries(s.catAvgs) | slice:0:3"
+                [style.background]="catBg(cat.value)"
+                [style.color]="catColor(cat.value)">
+            {{ cat.key }}: {{ cat.value }}%
+          </span>
+        </div>
+        <div class="sr-score" [style.color]="getScoreColor(s.avg)">
+          <div class="sr-score-val">{{ s.avg }}%</div>
+          <mat-icon [style.color]="getTrendColor(s.trend)">{{ getTrendIcon(s.trend) }}</mat-icon>
+        </div>
+        <div class="sr-count">{{ s.count }} assessments</div>
+        <mat-icon class="sr-arrow">chevron_right</mat-icon>
+        <app-student-progress [student]="s"></app-student-progress>
+      </div>
+    </div>
+  </div>
+
+  <!-- Individual Student -->
+  <div *ngIf="!loading && selectedStudent" class="student-detail">
+    <app-student-progress [student]="selectedStudent"></app-student-progress>
+    <app-ai-feedback [feedback]="selectedStudent?.aiFeedback"></app-ai-feedback>
+    <app-skills-gap [analysis]="selectedStudent?.skillsGap"></app-skills-gap>
+
+    <div class="sd-stats">
+      <div class="sds-item">
+        <div class="sds-val" [style.color]="getScoreColor(selectedStudent.avg)">{{ selectedStudent.avg }}%</div>
+        <div class="sds-label">Overall Average</div>
+      </div>
+      <div class="sds-item">
+        <div class="sds-val">{{ selectedStudent.count }}</div>
+        <div class="sds-label">Assessments</div>
+      </div>
+      <div class="sds-item">
+        <mat-icon class="sds-trend" [style.color]="getTrendColor(selectedStudent.trend)">{{ getTrendIcon(selectedStudent.trend) }}</mat-icon>
+        <div class="sds-label">{{ selectedStudent.trend }}</div>
+      </div>
+      <div class="sds-item" *ngIf="weakCategories.length">
+        <div class="sds-val red">{{ weakCategories.length }}</div>
+        <div class="sds-label">Weak Areas</div>
+      </div>
+    </div>
+
+    <div class="sd-grid">
+
+      <div class="sd-card">
+        <div class="sdc-header"><mat-icon>donut_large</mat-icon> Category Performance</div>
+        <div class="cat-bars">
+          <div class="cat-bar-row" *ngFor="let cat of catEntries(selectedStudent.catAvgs)">
+            <div class="cbr-label">{{ cat.key }}</div>
+            <div class="cbr-track">
+              <div class="cbr-fill"
+                   [style.width.%]="cat.value"
+                   [style.background]="getScoreColor(cat.value)"></div>
+            </div>
+            <div class="cbr-val" [style.color]="getScoreColor(cat.value)">{{ cat.value }}%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sd-card" *ngIf="weakCategories.length">
+        <div class="sdc-header"><mat-icon>warning</mat-icon> Skills Gap</div>
+        <div class="weak-list">
+          <div class="weak-item" *ngFor="let cat of weakCategories">
+            <mat-icon>cancel</mat-icon>
+            <div>
+              <div class="wi-name">{{ cat }}</div>
+              <div class="wi-score">Avg: {{ getCatScore(cat) }}% — Below threshold</div>
+              <div class="wi-tip">Recommend: Extra sessions + practice exercises</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Score history -->
+    <div class="sd-card">
+      <div class="sdc-header"><mat-icon>history</mat-icon> Assessment History</div>
+      <table mat-table [dataSource]="selectedStudent.scores" class="score-hist-table">
+        <ng-container matColumnDef="assignment">
+          <th mat-header-cell *matHeaderCellDef>Assignment</th>
+          <td mat-cell *matCellDef="let s"><strong>{{ s.assignmentName }}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Category</th>
+          <td mat-cell *matCellDef="let s">{{ s.category }}</td>
+        </ng-container>
+        <ng-container matColumnDef="week">
+          <th mat-header-cell *matHeaderCellDef>Week</th>
+          <td mat-cell *matCellDef="let s">{{ s.weekLabel || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="score">
+          <th mat-header-cell *matHeaderCellDef>Score</th>
+          <td mat-cell *matCellDef="let s">
+            <span class="score-pill"
+                  [style.background]="getScoreColor(s.score) + '22'"
+                  [style.color]="getScoreColor(s.score)">{{ s.score }}%</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="grade">
+          <th mat-header-cell *matHeaderCellDef>Grade</th>
+          <td mat-cell *matCellDef="let s">{{ s.grade || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="trend">
+          <th mat-header-cell *matHeaderCellDef>Trend</th>
+          <td mat-cell *matCellDef="let s">
+            <mat-icon [style.color]="getTrendColor(s.trend)" style="font-size:18px;width:18px;height:18px">{{ getTrendIcon(s.trend) }}</mat-icon>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let s">{{ s.submittedDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="['assignment','category','week','score','grade','trend','date']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['assignment','category','week','score','grade','trend','date']"></tr>
+      </table>
+    </div>
+
+  </div>
+</div>

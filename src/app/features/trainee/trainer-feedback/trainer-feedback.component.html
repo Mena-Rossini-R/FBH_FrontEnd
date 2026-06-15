@@ -1,0 +1,86 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div>
+      <h2>Trainer Feedback</h2>
+      <p>Share your feedback on sessions and trainer performance · Questions from Tecstac Portal</p>
+    </div>
+    <div class="pending-note" *ngIf="!loading">
+      <mat-icon>info</mat-icon>
+      {{ scores.length - submittedFeedbacks.length }} sessions awaiting feedback
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <div class="feedback-layout" *ngIf="!loading">
+
+    <!-- Score list -->
+    <div class="score-list-panel">
+      <div class="panel-label">SELECT SESSION</div>
+      <div class="score-item" *ngFor="let s of scores"
+           [class.selected]="selectedScoreId===s.id"
+           [class.done]="alreadySubmitted(s.id)"
+           (click)="!alreadySubmitted(s.id) ? selectScore(s.id) : null">
+        <div class="si-top">
+          <span class="si-name">{{ s.assignmentName }}</span>
+          <span class="si-score" [class.green]="s.score>=75" [class.amber]="s.score>=65&&s.score<75" [class.red]="s.score<65">
+            {{ s.score }}%
+          </span>
+        </div>
+        <div class="si-meta">{{ s.category }} · {{ s.weekLabel || s.submittedDate | date:'mediumDate' }}</div>
+        <div class="si-done" *ngIf="alreadySubmitted(s.id)"><mat-icon>check_circle</mat-icon> Feedback submitted</div>
+      </div>
+      <div class="empty-msg" *ngIf="!scores.length">No sessions found. Scores will appear here.</div>
+    </div>
+
+    <!-- Feedback form -->
+    <div class="feedback-form-panel" *ngIf="selectedScoreId && selectedScore">
+      <div class="ffp-header">
+        <mat-icon>rate_review</mat-icon>
+        <div>
+          <div class="ffp-title">{{ selectedScore.assignmentName }}</div>
+          <div class="ffp-sub">{{ selectedScore.category }} · {{ selectedScore.weekLabel }}</div>
+        </div>
+      </div>
+
+      <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()">
+        <div class="question-list">
+
+          <!-- Rating questions -->
+          <div class="question-card" *ngFor="let q of feedbackQuestions; let qi=index">
+            <div class="q-text">{{ qi + 1 }}. {{ q.question }}
+              <span class="q-required" *ngIf="qi < 4">*</span>
+            </div>
+
+            <!-- Rating 1–5 -->
+            <div class="rating-row" *ngIf="q.type==='rating'">
+              <label class="rating-btn" *ngFor="let r of ratings"
+                     [class.selected]="feedbackForm.get('q'+(qi+1))?.value === r">
+                <input type="radio" [formControlName]="'q'+(qi+1)" [value]="r" hidden>
+                <span class="star">{{ r }}</span>
+                <span class="star-label">{{ r===1?'Poor':r===2?'Fair':r===3?'Good':r===4?'Very Good':'Excellent' }}</span>
+              </label>
+            </div>
+
+            <!-- Text comment -->
+            <textarea *ngIf="q.type==='text'" [formControlName]="'q'+(qi+1)"
+                      rows="3" placeholder="Optional comments..." class="comment-box"></textarea>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn-cancel" (click)="selectedScoreId=null">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="feedbackForm.invalid || submitting">
+            <mat-spinner diameter="16" *ngIf="submitting" style="display:inline-block;margin-right:6px"></mat-spinner>
+            {{ submitting ? 'Submitting...' : 'Submit Feedback' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="select-prompt" *ngIf="!selectedScoreId">
+      <mat-icon>rate_review</mat-icon>
+      <p>Select a session from the left to give feedback</p>
+    </div>
+  </div>
+</div>

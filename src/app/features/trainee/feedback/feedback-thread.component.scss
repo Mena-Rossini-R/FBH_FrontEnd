@@ -1,0 +1,35 @@
+// feedback-thread.component.scss
+.thread-wrapper { max-width:1200px; }
+.thread-layout { display:grid; grid-template-columns:320px 1fr; gap:20px; @media(max-width:900px){grid-template-columns:1fr;} }
+.assignments-panel {
+  mat-card-title { font-size:15px; font-weight:600; }
+  .asgn-item { padding:12px; border-radius:8px; margin-bottom:8px; cursor:pointer; border:1.5px solid #DAE4F2;
+    transition:all .15s; &:hover{background:#F5F8FF;} &.selected{background:#EAF2FE;border-color:#2A70B2;}
+    .asgn-name { font-size:13px; font-weight:600; color:#0E1630; }
+    .asgn-meta { font-size:11px; color:#9BA8BB; margin:2px 0; }
+    .asgn-badge { font-size:10px; padding:1px 6px; border-radius:6px; background:#E9F1FE; color:#2A70B2; font-weight:600;
+      &.pending { background:#FFF3E0; color:#BE780E; } }
+  }
+}
+.thread-panel {
+  display:flex; flex-direction:column;
+  mat-card-title { font-size:14px; font-weight:600; color:#0E1630; }
+  mat-card-content { flex:1; overflow-y:auto; max-height:460px; }
+}
+.chat-messages { display:flex; flex-direction:column; gap:12px; padding:4px 0; }
+.message { max-width:80%;
+  &.trainer { align-self:flex-start;
+    .msg-bubble { background:#EAF2FE; border-radius:0 12px 12px 12px; color:#0E1630; }
+  }
+  &.trainee { align-self:flex-end;
+    .msg-header { flex-direction:row-reverse; }
+    .msg-bubble { background:#E8F7F2; border-radius:12px 0 12px 12px; color:#0E1630; }
+  }
+  .msg-header { display:flex; align-items:center; gap:8px; margin-bottom:4px;
+    .msg-sender { font-size:12px; font-weight:600; color:#5C728C; }
+    .msg-time   { font-size:11px; color:#9BA8BB; }
+  }
+  .msg-bubble { padding:10px 14px; font-size:13px; line-height:1.5; }
+}
+.reply-bar { display:flex; align-items:center; gap:10px; padding:12px 16px;
+  border-top:1px solid #DAE4F2; }

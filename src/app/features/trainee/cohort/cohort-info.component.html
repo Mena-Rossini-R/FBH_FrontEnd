@@ -1,0 +1,65 @@
+<!-- cohort-info.component.html -->
+<div class="page-wrapper">
+  <div class="page-header"><div><h2>My Cohort & Pod</h2><p>Peer connections and cohort information</p></div></div>
+
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <ng-container *ngIf="!loading && currentUser">
+
+    <!-- Cohort card -->
+    <div class="info-row">
+      <mat-card class="info-card">
+        <div class="info-header cohort">
+          <mat-icon>school</mat-icon>
+          <div><div class="info-title">{{ currentUser.cohortName || 'Cohort 12' }}</div>
+            <div class="info-sub">Full Stack QA Engineering  ·  Jan – Jun 2026</div></div>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="info-stats">
+          <div class="info-stat" *ngFor="let s of [
+            {label:'Your Avg Score', value:(avgScore|number:'1.0-0')+'%'},
+            {label:'Assignments',    value:podScores.length},
+            {label:'Program Weeks',  value:'22'}
+          ]">
+            <div class="stat-val">{{ s.value }}</div>
+            <div class="stat-lbl">{{ s.label }}</div>
+          </div>
+        </div>
+      </mat-card>
+
+      <!-- Pod card -->
+      <mat-card class="info-card">
+        <div class="info-header pod">
+          <mat-icon>group_work</mat-icon>
+          <div><div class="info-title">{{ currentUser.podName || 'Pod C' }}</div>
+            <div class="info-sub">Your assigned pod group</div></div>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="pod-details">
+          <div class="pod-detail-row"><span>Pod Name</span><strong>{{ currentUser.podName || 'Pod C' }}</strong></div>
+          <div class="pod-detail-row"><span>Your Avg</span><strong [ngClass]="getScoreClass(avgScore)">{{ avgScore | number:'1.0-0' }}%</strong></div>
+          <div class="pod-detail-row"><span>Trainer</span><strong>Trainer Alex</strong></div>
+          <div class="pod-detail-row"><span>Contact</span><strong style="color:#2A70B2">trainer&#64;fh.com</strong></div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- My scores in cohort context -->
+    <mat-card>
+      <mat-card-header><mat-card-title><mat-icon>assignment</mat-icon> My Score History</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="empty-state" *ngIf="!podScores.length"><mat-icon>assignment</mat-icon><p>No scores yet</p></div>
+        <div class="score-list" *ngIf="podScores.length">
+          <div class="score-row" *ngFor="let s of podScores; let i = index" [class.alt]="i%2===0">
+            <span class="idx">{{ i+1 }}</span>
+            <span class="sname">{{ s.assignmentName }}</span>
+            <span class="scat">{{ s.category }}</span>
+            <span [ngClass]="getScoreClass(s.score)" style="font-weight:700">{{ s.score }}%</span>
+            <span style="color:#9BA8BB;font-size:12px">{{ s.submittedDate | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </ng-container>
+</div>
