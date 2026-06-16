@@ -50,4 +50,13 @@ export class TraineeDashboardComponent implements OnInit {
   getBarColor(score: number): string {
     return score >= 75 ? '#1A8240' : score >= 65 ? '#BE780E' : '#C22626';
   }
+  getActivityIcon(type: string): string {
+    switch (type) {
+      case 'SCORE_UPLOADED': return 'assignment';
+      case 'FEEDBACK_GIVEN': return 'chat';
+      case 'FEEDBACK_VIEWED': return 'visibility';
+      case 'ALERT_CREATED': return 'notifications';
+      default: return 'info';
+    }
+  }
 }

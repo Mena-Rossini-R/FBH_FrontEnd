@@ -3,13 +3,12 @@ import { Component, Input } from '@angular/core';
 @Component({
   selector: 'app-ai-feedback',
   template: `
-    <div *ngIf="feedback; else loading">
+    <div *ngIf="feedback != null && feedback !== ''; else noData">
       <mat-icon color="accent">smart_toy</mat-icon>
       <span>{{ feedback }}</span>
     </div>
-    <ng-template #loading>
-      <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
-      <span>Loading AI feedback...</span>
+    <ng-template #noData>
+      <span style="color:#9BA8BB; font-size:12px;">No AI feedback available</span>
     </ng-template>
   `
 })

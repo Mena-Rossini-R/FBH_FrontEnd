@@ -33,7 +33,7 @@ export interface CohortUploadResult {
 
 export interface FeedbackResponse {
   id: number; scoreId: number; assignmentName: string; senderName: string;
-  senderRole: string; message: string; readByTrainee: boolean; createdAt: string;
+  senderRole: string; message: string; readByTrainee: boolean; readByTrainer: boolean; createdAt: string;
 }
 
 export interface AlertResponse {
@@ -66,6 +66,19 @@ export interface StudentProgress {
   trainee: UserProfile; scores: ScoreResponse[];
   avgScore: number; trend: TrendDirection; categories: Record<string, number>;
   skillsGap?: string; aiFeedback?: string;
+}
+
+export interface CohortStudentInfo {
+  id: number; fullName: string; email: string; phone?: string; department?: string;
+}
+export interface CohortPodInfo {
+  podName: string; students: CohortStudentInfo[];
+}
+export interface CohortInfo {
+  cohortName: string; pods: CohortPodInfo[]; studentCount: number;
+}
+export interface CohortStructure {
+  cohorts: CohortInfo[]; unassigned: CohortStudentInfo[];
 }
 
 // ── AI Agent ──────────────────────────────────────────────────────────────

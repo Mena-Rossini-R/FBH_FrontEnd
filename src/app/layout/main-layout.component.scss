@@ -14,10 +14,13 @@
   }
   mat-nav-list {
     flex:1; padding-top:8px;
-    a { color:#8AA4C4; border-radius:0 22px 22px 0; margin-right:10px;
+    a { color:#C8D8EC; border-radius:0 22px 22px 0; margin-right:10px;
       &.active-link { background:#2A70B2; color:#fff; mat-icon { color:#fff; } }
       &:hover:not(.active-link) { background:rgba(255,255,255,.07); color:#fff; }
-      mat-icon { color:#8AA4C4; }
+      mat-icon { color:#C8D8EC; }
+    }
+    ::ng-deep .mdc-list-item__primary-text {
+      display: flex !important; align-items: center; width: 100%; overflow: visible;
     }
   }
   .sidenav-footer { padding:0 0 8px;
@@ -40,3 +43,15 @@
 
 .main-content { background:#F2F4F8; }
 .page-content  { padding:24px; min-height:calc(100vh - 64px); }
+
+.nav-label-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+}
+
+.nav-unread-dot {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #DC2626; color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 18px; height: 18px; border-radius: 9px; padding: 0 5px;
+  margin-left: auto;
+}

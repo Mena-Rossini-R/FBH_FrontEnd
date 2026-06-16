@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ScoreResponse, ScoreRequest, BulkUploadResult, CohortUploadResult,
-         FeedbackResponse, AlertResponse, DashboardStats, UserProfile } from '../../shared/models';
+         FeedbackResponse, AlertResponse, DashboardStats, UserProfile,
+         CohortStructure, CohortStudentInfo } from '../../shared/models';
 import { environment } from '../../../environments/environment';
 
 const API = environment.apiUrl;
@@ -21,9 +22,7 @@ export class ScoreService {
   getAiFeedback(scoreId: number): Observable<{feedback: string}>         { return this.http.get<{feedback:string}>(`${API}/scores/${scoreId}/ai-feedback`); }
   getSkillsGap(traineeId: number): Observable<{analysis: string}>        { return this.http.get<{analysis:string}>(`${API}/scores/trainee/${traineeId}/skills-gap`); }
   getConsolidatedReport(): Observable<any>                               { return this.http.get<any>(`${API}/trainer/agent/consolidated-report`); }
-  getScoresByTrainee(id: number): Observable<ScoreResponse[]> {
-    return this.getTraineeScores(id);
-  }
+  getScoresByTrainee(id: number): Observable<ScoreResponse[]>            { return this.getTraineeScores(id); }
 }
 
 @Injectable({ providedIn: 'root' })
@@ -33,6 +32,8 @@ export class FeedbackService {
     return this.http.post<FeedbackResponse>(`${API}/feedback`, { scoreId, message });
   }
   getThread(scoreId: number): Observable<FeedbackResponse[]>             { return this.http.get<FeedbackResponse[]>(`${API}/feedback/score/${scoreId}`); }
+  getUnreadCounts(): Observable<Record<number, number>>                  { return this.http.get<Record<number, number>>(`${API}/feedback/unread-counts`); }
+  getUnreadTraineeCounts(): Observable<Record<number, number>>           { return this.http.get<Record<number, number>>(`${API}/feedback/unread-trainee-counts`); }
   markViewed(scoreId: number): Observable<void>                          { return this.http.post<void>(`${API}/feedback/score/${scoreId}`, {}); }
 }
 
@@ -58,8 +59,8 @@ export class TemplateService {
     return this.http.get(`${API}/template/score-upload`, { responseType: 'blob' });
   }
   downloadCohortTemplate(): Observable<Blob> {
-  return this.http.get(`${API}/template/cohort-upload`, { responseType: 'blob' });
-}
+    return this.http.get(`${API}/template/cohort-upload`, { responseType: 'blob' });
+  }
 }
 
 @Injectable({ providedIn: 'root' })
@@ -85,7 +86,32 @@ export class TrainerFeedbackService {
 export class CohortUploadService {
   constructor(private http: HttpClient) {}
   uploadCohort(file: File): Observable<CohortUploadResult> {
-  const fd = new FormData(); fd.append('file', file);
-  return this.http.post<CohortUploadResult>(`${API}/cohort/upload`, fd);
+    const fd = new FormData(); fd.append('file', file);
+    return this.http.post<CohortUploadResult>(`${API}/cohort/upload`, fd);
   }
 }
+
+@Injectable({ providedIn: 'root' })
+export class CohortManagementService {
+  constructor(private http: HttpClient) {}
+  getStructure(): Observable<CohortStructure> {
+    return this.http.get<CohortStructure>(`${API}/trainer/cohort/structure`);
+  }
+  getUnassigned(): Observable<CohortStudentInfo[]> {
+    return this.http.get<CohortStudentInfo[]>(`${API}/trainer/cohort/unassigned`);
+  }
+  addTrainee(req: { fullName: string; email: string; phone?: string; department?: string; cohortName: string; podName: string }): Observable<CohortStudentInfo> {
+    return this.http.post<CohortStudentInfo>(`${API}/trainer/cohort/add-trainee`, req);
+  }
+  assignStudent(userId: number, podName: string, cohortName: string): Observable<CohortStudentInfo> {
+    return this.http.put<CohortStudentInfo>(`${API}/trainer/cohort/assign`, { userId, podName, cohortName });
+  }
+  removeFromPod(userId: number): Observable<void> {
+    return this.http.delete<void>(`${API}/trainer/cohort/remove/${userId}`);
+  }
+  uploadBulk(file: File): Observable<CohortUploadResult> {
+    const fd = new FormData(); fd.append('file', file);
+    return this.http.post<CohortUploadResult>(`${API}/trainer/cohort/upload`, fd);
+  }
+}
+

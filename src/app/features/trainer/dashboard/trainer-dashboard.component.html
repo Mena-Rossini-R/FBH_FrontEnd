@@ -61,9 +61,9 @@
         <mat-card-content>
           <div *ngFor="let s of stats.atRiskStudents">
             <div class="risk-row">
-              <span>{{ s.fullName }}</span>
-              <app-ai-feedback [feedback]="s.aiFeedback"></app-ai-feedback>
-              <app-skills-gap [analysis]="s.skillsGap"></app-skills-gap>
+              <span class="risk-name">{{ s.fullName }}</span>
+              <span class="risk-pod">{{ s.podName }}</span>
+              <span class="risk-score score-red">{{ s.latestScore | number:'1.0-0' }}%</span>
             </div>
           </div>
         </mat-card-content>

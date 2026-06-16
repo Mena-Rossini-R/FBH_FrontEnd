@@ -11,16 +11,17 @@
     <!-- KPI Cards -->
     <div class="kpi-row">
       <mat-card class="kpi-card" *ngFor="let k of [
-        {label:'Overall Progress', value: (stats.overallProgress||0)+'%', color:'#2A70B2'},
-        {label:'Assignments Done', value: (stats.assignmentsDone||0)+'/'+( stats.totalAssignments||0), color:'#1A8240'},
-        {label:'Pending Feedback', value: stats.pendingFeedback, color:'#BE780E'},
-        {label:'Skill Alerts',     value: alertCount, color:'#C22626'}
+        {label:'Overall Progress',  value: (stats.overallProgress||0)+'%', color:'#2A70B2', icon:'trending_up'},
+        {label:'Assignments Done',  value: (stats.assignmentsDone||0)+'/'+( stats.totalAssignments||0), color:'#1A8240', icon:'assignment_turned_in'},
+        {label:'Pending Feedback',  value: stats.pendingFeedback,  color:'#BE780E', icon:'hourglass_empty'},
+        {label:'Skill Alerts',      value: alertCount,              color:'#C22626', icon:'notifications'}
       ]">
         <div class="kpi-stripe" [style.background]="k.color"></div>
         <div class="kpi-body">
           <div class="kpi-label">{{ k.label }}</div>
           <div class="kpi-value" [style.color]="k.color">{{ k.value }}</div>
         </div>
+        <mat-icon class="kpi-bg-icon">{{ k.icon }}</mat-icon>
       </mat-card>
     </div>
 
@@ -73,18 +74,15 @@
 
     </div>
 
-    <!-- Recent activity -->
-    <mat-card *ngIf="stats.recentActivity?.length">
+    <!-- Recent activity — only trainer actions for this trainee -->
+    <mat-card class="activity-card" *ngIf="stats.recentActivity?.length">
       <mat-card-header><mat-card-title><mat-icon>history</mat-icon> Recent Activity</mat-card-title></mat-card-header>
       <mat-card-content>
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <div *ngFor="let a of stats.recentActivity"
-               style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #F0F4F8">
-            <mat-icon style="color:#2A70B2;flex-shrink:0">info</mat-icon>
-            <div>
-              <div style="font-size:13px;font-weight:500">{{ a.description }}</div>
-              <div style="font-size:11px;color:#9BA8BB">{{ a.createdAt | date:'short' }}</div>
-            </div>
+        <div class="activity-item" *ngFor="let a of stats.recentActivity">
+          <div class="act-dot"><mat-icon>{{ getActivityIcon(a.activityType) }}</mat-icon></div>
+          <div>
+            <div class="act-desc">{{ a.description }}</div>
+            <div class="act-meta">{{ a.performedBy }} · {{ a.createdAt | date:'short' }}</div>
           </div>
         </div>
       </mat-card-content>

@@ -1,4 +1,3 @@
-// features/trainee/feedback/feedback-thread.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormControl, Validators } from '@angular/forms';
@@ -20,6 +19,7 @@ export class FeedbackThreadComponent implements OnInit {
   loading = false;
   sending = false;
   selectedScoreId: number | null = null;
+  unreadCounts: Record<number, number> = {};
 
   constructor(
     private feedbackSvc: FeedbackService,
@@ -35,7 +35,11 @@ export class FeedbackThreadComponent implements OnInit {
 
     this.scoreSvc.getScoresByTrainee(userId).subscribe({
       next: (d: ScoreResponse[]) => {
-        this.scores = d;
+        // Show all scores (not just ones with feedback) so new assignments always show as tabs
+        this.scores = d.sort((a, b) =>
+          new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime()
+        );
+        this.loadUnreadCounts();
         const qsId = this.route.snapshot.queryParamMap.get('scoreId');
         if (qsId) this.selectScore(Number(qsId));
       },
@@ -43,12 +47,29 @@ export class FeedbackThreadComponent implements OnInit {
     });
   }
 
+  loadUnreadCounts(): void {
+    this.feedbackSvc.getUnreadTraineeCounts().subscribe({
+      next: (c) => { this.unreadCounts = c; },
+      error: () => {}
+    });
+  }
+
+  hasUnread(scoreId: number): boolean {
+    return !!this.unreadCounts[scoreId] && this.unreadCounts[scoreId] > 0;
+  }
+
   selectScore(scoreId: number): void {
     this.selectedScoreId = scoreId;
     this.selectedScore = this.scores.find(s => s.id === scoreId) ?? null;
     this.loading = true;
     this.feedbackSvc.getThread(scoreId).subscribe({
-      next: (msgs) => { this.messages = msgs; this.loading = false; },
+      next: (msgs) => {
+        this.messages = msgs;
+        this.loading = false;
+        // Clear unread count locally after opening
+        this.unreadCounts = { ...this.unreadCounts };
+        delete this.unreadCounts[scoreId];
+      },
       error: () => this.loading = false
     });
   }
@@ -62,7 +83,10 @@ export class FeedbackThreadComponent implements OnInit {
         this.messageCtrl.reset();
         this.sending = false;
       },
-      error: (err) => { this.sending = false; this.snack.open(err.error?.error ?? 'Send failed', 'Close', { duration: 3000 }); }
+      error: (err) => {
+        this.sending = false;
+        this.snack.open(err.error?.error ?? 'Send failed', 'Close', { duration: 3000 });
+      }
     });
   }
 
