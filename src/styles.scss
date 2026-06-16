@@ -37,3 +37,15 @@ body {
 .score-green  { color: #1A8240 !important; font-weight: 600; }
 .score-amber  { color: #BE780E !important; font-weight: 600; }
 .score-red    { color: #C22626 !important; font-weight: 600; }
+/* Sidenav nav link color fix */
+.sidenav .mat-mdc-list-item,
+.sidenav .mat-mdc-list-item .mdc-list-item__primary-text,
+.sidenav .mat-mdc-list-item .mat-icon {
+  color: #C8D8EC !important;
+}
+
+.sidenav .mat-mdc-list-item.active-link,
+.sidenav .mat-mdc-list-item.active-link .mdc-list-item__primary-text,
+.sidenav .mat-mdc-list-item.active-link .mat-icon {
+  color: #fff !important;
+}

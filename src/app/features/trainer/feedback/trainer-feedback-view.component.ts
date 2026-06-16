@@ -25,8 +25,7 @@ export class TrainerFeedbackViewComponent implements OnInit {
   loading = false;
   loadingMessages = false;
   sending = false;
-
-  private unreadScoreIds = new Set<number>();
+  unreadCounts: Record<number, number> = {};
 
   constructor(
     private feedbackSvc: FeedbackService,
@@ -35,40 +34,47 @@ export class TrainerFeedbackViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadScoresWithFeedback();
+    this.load();
   }
 
-  loadScoresWithFeedback(): void {
+  load(): void {
     this.loading = true;
+    this.feedbackSvc.getUnreadCounts().subscribe({ next: (c) => { this.unreadCounts = c; }, error: () => {} });
     this.scoreSvc.getTrainerScores().subscribe({
       next: (scores) => {
-        const relevant = scores.filter(s =>
+        const filtered = scores.filter(s =>
           s.feedbackStatus === 'PENDING' || s.feedbackStatus === 'VIEWED' || s.feedbackStatus === 'ACKNOWLEDGED'
         );
+        // Group by trainee email
         const map = new Map<string, StudentGroup>();
-        for (const s of relevant) {
+        for (const s of filtered) {
           if (!map.has(s.traineeEmail)) {
             map.set(s.traineeEmail, { name: s.traineeName, email: s.traineeEmail, scores: [], totalUnread: 0 });
           }
-          const group = map.get(s.traineeEmail)!;
-          group.scores.push(s);
-          if (s.feedbackStatus === 'PENDING') group.totalUnread++;
+          map.get(s.traineeEmail)!.scores.push(s);
         }
         this.students = Array.from(map.values());
+        this.updateUnreadTotals();
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
-        this.snack.open('Failed to load feedback', 'Close', { duration: 3000 });
-      }
+      error: () => { this.loading = false; this.snack.open('Failed to load', 'Close', { duration: 3000 }); }
     });
   }
 
-  selectStudent(s: StudentGroup): void {
-    this.selectedStudent = s;
+  updateUnreadTotals(): void {
+    for (const st of this.students) {
+      st.totalUnread = st.scores.reduce((sum, s) => sum + (this.unreadCounts[s.id] || 0), 0);
+    }
+  }
+
+  selectStudent(student: StudentGroup): void {
+    this.selectedStudent = student;
     this.selectedScore = null;
     this.messages = [];
-    this.unreadScoreIds = new Set(s.scores.filter(sc => sc.feedbackStatus === 'PENDING').map(sc => sc.id));
+    // Auto-select first assignment
+    if (student.scores.length === 1) {
+      this.selectScore(student.scores[0]);
+    }
   }
 
   selectScore(score: ScoreResponse): void {
@@ -77,40 +83,30 @@ export class TrainerFeedbackViewComponent implements OnInit {
     this.feedbackSvc.getThread(score.id).subscribe({
       next: (msgs) => {
         this.messages = msgs;
-        this.unreadScoreIds.delete(score.id);
+        this.loadingMessages = false;
+        // Clear local unread for this score
+        delete this.unreadCounts[score.id];
         if (this.selectedStudent) {
-          this.selectedStudent.totalUnread = this.unreadScoreIds.size;
+          this.selectedStudent.totalUnread = this.selectedStudent.scores
+            .reduce((sum, s) => sum + (this.unreadCounts[s.id] || 0), 0);
         }
-        this.loadingMessages = false;
       },
-      error: () => {
-        this.loadingMessages = false;
-        this.snack.open('Failed to load conversation', 'Close', { duration: 3000 });
-      }
+      error: () => { this.loadingMessages = false; this.snack.open('Failed to load messages', 'Close', { duration: 3000 }); }
     });
-  }
-
-  hasUnread(scoreId: number): boolean {
-    return this.unreadScoreIds.has(scoreId);
   }
 
   sendReply(): void {
     if (!this.messageCtrl.value?.trim() || !this.selectedScore) return;
     this.sending = true;
     this.feedbackSvc.addMessage(this.selectedScore.id, this.messageCtrl.value.trim()).subscribe({
-      next: (msg) => {
-        this.messages.push(msg);
-        this.messageCtrl.reset();
-        this.sending = false;
-      },
-      error: () => {
-        this.sending = false;
-        this.snack.open('Failed to send reply', 'Close', { duration: 3000 });
-      }
+      next: (msg) => { this.messages.push(msg); this.messageCtrl.reset(); this.sending = false; },
+      error: () => { this.sending = false; this.snack.open('Failed to send', 'Close', { duration: 3000 }); }
     });
   }
 
-  isTrainer(senderRole: string): boolean {
-    return senderRole === 'TRAINER';
+  hasUnread(scoreId: number): boolean {
+    return !!this.unreadCounts[scoreId] && this.unreadCounts[scoreId] > 0;
   }
+
+  isTrainer(role: string): boolean { return role === 'TRAINER'; }
 }
