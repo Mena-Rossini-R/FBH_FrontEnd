@@ -9,7 +9,7 @@
       <mat-icon>search</mat-icon>
       <input [(ngModel)]="searchTerm" placeholder="Search by name or email..." (ngModelChange)="applyFilter()">
     </div>
-    <select class="filter-select" [(ngModel)]="podFilter" (change)="applyFilter()">
+    <select id="podFilter" class="filter-select" [(ngModel)]="podFilter" (change)="applyFilter()">
       <option value="">All Pods</option>
       <option *ngFor="let p of pods" [value]="p">{{ p }}</option>
     </select>
