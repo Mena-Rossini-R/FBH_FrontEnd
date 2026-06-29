@@ -13,7 +13,7 @@ export class LoginComponent {
 
   demoAccounts = [
     { label: 'Trainer', email: 'trainer@fh.com', password: 'password', color: '#2A70B2' },
-    { label: 'Trainee', email: 'ravi@fh.com',    password: 'password', color: '#12987A' },
+    { label: 'Trainee', email: 'balaji@fh.com', password: 'password', color: '#12987A' },
   ];
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router, private snack: MatSnackBar) {
