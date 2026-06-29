@@ -27,8 +27,8 @@ export class BulkUploadComponent {
 
   // Excel format guide
   scoreFormat = [
-    { col: 'A', header: 'name', desc: 'Student full name', example: 'Ravi Kumar' },
-    { col: 'B', header: 'email', desc: 'Student email (must exist in system)', example: 'ravi@fh.com' },
+    { col: 'A', header: 'name', desc: 'Student full name', example: 'Balaji' },
+    { col: 'B', header: 'email', desc: 'Student email (must exist in system)', example: 'balaji@fh.com' },
     { col: 'C', header: 'category', desc: 'Skill category', example: 'Technical' },
     { col: 'D', header: 'assignment', desc: 'Assignment name', example: 'Sprint Review W3' },
     { col: 'E', header: 'score', desc: 'Score (0–100)', example: '78' },
@@ -37,8 +37,8 @@ export class BulkUploadComponent {
   ];
 
   cohortFormat = [
-    { col: 'A', header: 'name', desc: 'Student full name', example: 'Ravi Kumar' },
-    { col: 'B', header: 'email', desc: 'Student email', example: 'ravi@company.com' },
+    { col: 'A', header: 'name', desc: 'Student full name', example: 'Balaji' },
+    { col: 'B', header: 'email', desc: 'Student email', example: 'balaji@company.com' },
     { col: 'C', header: 'cohort', desc: 'Cohort name', example: 'Cohort 12' },
     { col: 'D', header: 'pod', desc: 'Pod name', example: 'Pod A' },
     { col: 'E', header: 'phone', desc: 'Phone (optional)', example: '9876543210' },
